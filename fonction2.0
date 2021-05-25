@@ -1,0 +1,63 @@
+import sqlite3
+#ceci est ma part du travail je travaille avec Oscar et
+#nous avons divisé le travail comme vous l'avez conseillé
+#je m'occupe de la base de donné et lui de flask
+#c'est pourquoi j'ai tout transformé en fonction pour facilité leurs appels
+conn=sqlite3.connect('répértoire.db', check_same_thread=False)#création de la base de donnés
+cur=conn.cursor() #création d'un curseur pour interagir la base de donné
+
+
+def creer_table(): #cette fonction a été trés facile a faire
+    '''crée la table PERSONNES si elle n'existent pas déja'''
+    cur.execute('CREATE TABLE IF NOT EXISTS PERSONNES(nom TEXT, prenom TEXT, adresse_mail TEXT)')
+    conn.commit()
+
+def ajouter_personne(donnés): #permet de rajouter un utilisateur comme demander dans le cahier des charges
+    ''' dans données mettre dans un tuple
+    et dans l'odre de la table les données a inserer dans la table en STR'''
+    data=donnés
+    cur.execute('INSERT INTO PERSONNES(nom, prenom, adresse_mail) VALUES (?,?,?)',data)
+    conn.commit()
+    
+def modifier(donnés,place):#permet de modifier les donnés d'une personne ayant deja des donnés dans la base
+    '''dans donnés mettre les variables a changer
+    et la valeur qui servira de repere et
+    dans place mettre le nom des valeur a changer tjr dans des TUPLE et
+    dans le meme ordreet le tout en STR'''
+    modif=donnés
+    cur.execute('UPDATE PERSONNES SET '+str(place[0])+'=? WHERE '+str(place[1])+'=? AND adresse_mail=?',modif)#ici j'ai mis une variable pour WHERE auusi pour laisser la possibilité a oscar de l'utiliser beaucou plus librement
+    conn.commit()
+
+def suprimmer(donnés,place):#c'est içi que mes difficultées ont commencer cf bas de programme
+    '''pareil que  pour modifier '''
+    data=(str(donnés),)#la virgule pour régler le problème 
+    cur.execute('DELETE FROM PERSONNES WHERE '+str(place)+'=?',data)
+    conn.commit()
+
+def select(donnés,place):#même problème que pour suprimmer
+    '''pareil que pour modifier et suprimmer'''
+    data=(str(donnés),)#la virgule pour régler le problème
+    cur.execute('SELECT nom, prenom, adresse_mail FROM PERSONNES WHERE '+str(place)+'=?',data)#pareil que dans modifier
+    conn.commit()
+    liste=cur.fetchall()
+    return liste
+
+def fermer_fenetre():#une fonction pour fermer le curseur et
+    #la connection à la base de données ce qui est primordial
+    '''à utiliser quand on ferme la page web pour arreter la table'''
+    cur.close()
+    conn.close()
+#içi j'ai tésté chaucune de mes fonction et me suis redu compte que suprimmer et select avait un problème
+#en effet je ne fais appel qu'a un seul ppoint d'interrogation dans les 2 et donc ne rentre qu'une seule donné
+#sauf que le rpogramme refuse de voir un str omme un seul point d'interrogation et
+#donc va prendre chaque lettres séparémment ce qui ma beaucoup compliquer la vie jusuq'a que
+#je rajoute une virgule avec rien après dans data ainsi il considère les str comme une seule donné
+#c'est le seule veritable problème que j'ai rencontré
+creer_table()
+ajouter_personne(('VINCENT','Guilhem','guilhem10v@live.fr'))
+modifier(('Vincent3','guilhem10v@live.fr'),('nom','adresse_mail'))
+print(select(('guilhem10v@live.fr'),('adresse_mail')))
+suprimmer(('Vincent3'),('nom'))
+print(select(('guilhem10v@live.fr'),('adresse_mail')))
+fermer_fenetre()
+#
